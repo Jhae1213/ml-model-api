@@ -13,12 +13,10 @@ import pandas as pd
 import joblib
 
 # load model
-from google.colab import drive
-drive.mount('/content/MyDrive')
+import joblib
 
-drive_path = '/content/MyDrive/MyDrive/IT_IM82/best_model_randomforest.pkl'
+model = joblib.load('best_model_randomforest.pkl')
 
-model = joblib.load(drive_path)
 
 
 st.title("ML Model Prediction App")
