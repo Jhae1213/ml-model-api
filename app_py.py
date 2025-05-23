@@ -19,35 +19,43 @@ model = joblib.load('best_model_randomforest.pkl')
 
 
 
-st.title("ML Model Prediction App")
+st.title("Diabetes Prediction Web App")
+st.write("Input data to get predictions")
 
-# Option for user to upload CSV or input manually
-upload_option = st.radio("Choose input method:", ("Manual Input", "Upload CSV"))
+option = st.radio("Choose input method", ('Manual input'))
 
-if upload_option == "Manual Input":
-    # Create input fields (example with 4 features)
-    feature1 = st.number_input("Feature 1", step=0.01)
-    feature2 = st.number_input("Feature 2", step=0.01)
-    feature3 = st.number_input("Feature 3", step=0.01)
-    feature4 = st.number_input("Feature 4", step=0.01)
+def get_user_input():
+    pregnancies = st.number_input("Pregnancies", 0, 20, 1)
+    glucose = st.number_input("Glucose", 0, 200, 120)
+    blood_pressure = st.number_input("Blood Pressure", 0, 140, 70)
+    skin_thickness = st.number_input("Skin Thickness", 0, 100, 20)
+    insulin = st.number_input("Insulin", 0, 900, 79)
+    bmi = st.number_input("BMI", 0.0, 70.0, 33.6)
+    dpf = st.number_input("Diabetes Pedigree Function", 0.0, 3.0, 0.627)
+    age = st.number_input("Age", 1, 100, 33)
 
-    input_data = pd.DataFrame([[feature1, feature2, feature3, feature4]],
-                              columns=["feature1", "feature2", "feature3", "feature4"])
+    data = {
+        'Pregnancies': pregnancies,
+        'Glucose': glucose,
+        'BloodPressure': blood_pressure,
+        'SkinThickness': skin_thickness,
+        'Insulin': insulin,
+        'BMI': bmi,
+        'DiabetesPedigreeFunction': dpf,
+        'Age': age
+    }
+    return pd.DataFrame([data])
 
-    if st.button("Predict"):
-        prediction = model.predict(input_data)[0]
-        st.success(f"Predicted Class: {prediction}")
+if option == 'Manual input':
+    user_input_df = get_user_input()
+else:
+    uploaded_file = st.file_uploader("Upload CSV", type=['csv'])
+    if uploaded_file is not None:
+        user_input_df = pd.read_csv(uploaded_file)
+    else:
+        user_input_df = None
 
-elif upload_option == "Upload CSV":
-    uploaded_file = st.file_uploader("Upload CSV", type=["csv"])
-    if uploaded_file:
-        data = pd.read_csv(uploaded_file)
-        predictions = model.predict(data)
-        st.write("Predictions:")
-        st.write(predictions)
-
-# Display performance summary (replace with your real values)
-st.markdown("### 📊 Model Performance")
-st.write("**Accuracy:** 77.27%")
-st.write("**Confusion Matrix:**")
-# Optional: add real confusion matrix image or table
+if user_input_df is not None:
+    prediction = model.predict(user_input_df)
+    st.write("### Prediction")
+    st.write(prediction)
