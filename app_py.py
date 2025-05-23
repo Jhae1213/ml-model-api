@@ -8,23 +8,24 @@ Original file is located at
 """
 
 
+# -*- coding: utf-8 -*-
+"""app.py"""
+
 import streamlit as st
 import pandas as pd
-import joblib
-
-# load model
 import joblib
 
 # Load model
 model = joblib.load('best_model_randomforest.pkl')
 
-# Streamlit app title and description
+# Streamlit app UI
 st.title("Diabetes Prediction Web App")
 st.write("Input data manually or upload a CSV file to get predictions.")
 
-# Radio button for input method
+# Input method selection
 option = st.radio("Choose input method", ('Manual input', 'Upload CSV'))
 
+# Function for manual user input
 def get_user_input():
     pregnancies = st.number_input("Pregnancies", 0, 20, 1)
     glucose = st.number_input("Glucose", 0, 200, 120)
@@ -47,6 +48,7 @@ def get_user_input():
     }
     return pd.DataFrame([data])
 
+# Handle input
 user_input_df = None
 
 if option == 'Manual input':
@@ -58,19 +60,20 @@ else:
         st.write("Uploaded Data Preview:")
         st.dataframe(user_input_df)
 
+# Submit and predict
 if user_input_df is not None:
     if st.button("Submit for Prediction"):
         prediction = model.predict(user_input_df)
 
-        # Check if multiple rows are uploaded
+        st.markdown("### Prediction Result")
+
         if len(prediction) == 1:
-            result = "🟢 **Not Diabetic**" if prediction[0] == 0 else "🔴 **Diabetic**"
-            st.markdown("### Prediction Result:")
-            st.markdown(result)
+            label = "🟢 **Negative (Not Diabetic)**" if prediction[0] == 0 else "🔴 **Positive (Diabetic)**"
+            st.markdown(label)
         else:
-            # Map results for multiple predictions
-            st.markdown("### Prediction Results:")
-            result_labels = ['Not Diabetic' if p == 0 else 'Diabetic' for p in prediction]
+            # Handle multiple rows
+            result_labels = ['Negative (Not Diabetic)' if p == 0 else 'Positive (Diabetic)' for p in prediction]
             result_df = user_input_df.copy()
             result_df['Prediction'] = result_labels
             st.dataframe(result_df)
+
