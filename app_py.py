@@ -15,14 +15,15 @@ import joblib
 # load model
 import joblib
 
+# Load model
 model = joblib.load('best_model_randomforest.pkl')
 
-
-
+# Streamlit app title and description
 st.title("Diabetes Prediction Web App")
-st.write("Input data to get predictions")
+st.write("Input data manually or upload a CSV file to get predictions.")
 
-option = st.radio("Choose input method", ('Manual input'))
+# Radio button for input method
+option = st.radio("Choose input method", ('Manual input', 'Upload CSV'))
 
 def get_user_input():
     pregnancies = st.number_input("Pregnancies", 0, 20, 1)
@@ -46,16 +47,20 @@ def get_user_input():
     }
     return pd.DataFrame([data])
 
+user_input_df = None
+
 if option == 'Manual input':
     user_input_df = get_user_input()
 else:
     uploaded_file = st.file_uploader("Upload CSV", type=['csv'])
     if uploaded_file is not None:
         user_input_df = pd.read_csv(uploaded_file)
-    else:
-        user_input_df = None
+        st.write("Uploaded Data Preview:")
+        st.dataframe(user_input_df)
 
+# Submit button to trigger prediction
 if user_input_df is not None:
-    prediction = model.predict(user_input_df)
-    st.write("### Prediction")
-    st.write(prediction)
+    if st.button("Submit for Prediction"):
+        prediction = model.predict(user_input_df)
+        st.write("### Prediction Results:")
+        st.write(prediction)
