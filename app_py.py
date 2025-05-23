@@ -11,6 +11,9 @@ Original file is located at
 # -*- coding: utf-8 -*-
 """app.py"""
 
+# -*- coding: utf-8 -*-
+"""app.py"""
+
 import streamlit as st
 import pandas as pd
 import joblib
@@ -18,23 +21,23 @@ import joblib
 # Load model
 model = joblib.load('best_model_randomforest.pkl')
 
-# Streamlit app UI
-st.title("Diabetes Prediction Web App")
-st.write("Input data manually or upload a CSV file to get predictions.")
+# Streamlit UI
+st.title("🧪 Diabetes Prediction Web App")
+st.write("Input data manually or upload a CSV file to get a diabetes prediction.")
 
-# Input method selection
+# Input method
 option = st.radio("Choose input method", ('Manual input', 'Upload CSV'))
 
-# Function for manual user input
+# Manual input form
 def get_user_input():
     pregnancies = st.number_input("Pregnancies", 0, 20, 1)
-    glucose = st.number_input("Glucose", 0, 200, 120)
+    glucose = st.number_input("Glucose", 0, 200, 90)
     blood_pressure = st.number_input("Blood Pressure", 0, 140, 70)
     skin_thickness = st.number_input("Skin Thickness", 0, 100, 20)
-    insulin = st.number_input("Insulin", 0, 900, 79)
-    bmi = st.number_input("BMI", 0.0, 70.0, 33.6)
-    dpf = st.number_input("Diabetes Pedigree Function", 0.0, 3.0, 0.627)
-    age = st.number_input("Age", 1, 100, 33)
+    insulin = st.number_input("Insulin", 0, 900, 80)
+    bmi = st.number_input("BMI", 0.0, 70.0, 22.0)
+    dpf = st.number_input("Diabetes Pedigree Function", 0.0, 3.0, 0.1)
+    age = st.number_input("Age", 1, 100, 25)
 
     data = {
         'Pregnancies': pregnancies,
@@ -48,7 +51,7 @@ def get_user_input():
     }
     return pd.DataFrame([data])
 
-# Handle input
+# Get input
 user_input_df = None
 
 if option == 'Manual input':
@@ -57,23 +60,35 @@ else:
     uploaded_file = st.file_uploader("Upload CSV", type=['csv'])
     if uploaded_file is not None:
         user_input_df = pd.read_csv(uploaded_file)
-        st.write("Uploaded Data Preview:")
+        st.write("📄 Uploaded Data Preview:")
         st.dataframe(user_input_df)
 
-# Submit and predict
+# Prediction logic
 if user_input_df is not None:
     if st.button("Submit for Prediction"):
-        prediction = model.predict(user_input_df)
 
-        st.markdown("### Prediction Result")
+        # Get prediction probabilities
+        if hasattr(model, 'predict_proba'):
+            prob = model.predict_proba(user_input_df)
+            # Optional: You can adjust the threshold if needed
+            prediction = (prob[:, 1] >= 0.5).astype(int)
+        else:
+            prediction = model.predict(user_input_df)
+
+        # Debug: Show raw outputs
+        st.write("🧮 Raw prediction:", prediction)
+        if hasattr(model, 'predict_proba'):
+            st.write("🔢 Prediction probability (0 = Negative, 1 = Positive):", prob)
+
+        # Display results
+        st.markdown("### 🧾 Prediction Result")
 
         if len(prediction) == 1:
             label = "🟢 **Negative (Not Diabetic)**" if prediction[0] == 0 else "🔴 **Positive (Diabetic)**"
             st.markdown(label)
         else:
-            # Handle multiple rows
+            # Multiple rows
             result_labels = ['Negative (Not Diabetic)' if p == 0 else 'Positive (Diabetic)' for p in prediction]
             result_df = user_input_df.copy()
             result_df['Prediction'] = result_labels
             st.dataframe(result_df)
-
