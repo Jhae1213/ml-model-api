@@ -58,9 +58,19 @@ else:
         st.write("Uploaded Data Preview:")
         st.dataframe(user_input_df)
 
-# Submit button to trigger prediction
 if user_input_df is not None:
     if st.button("Submit for Prediction"):
         prediction = model.predict(user_input_df)
-        st.write("### Prediction Results:")
-        st.write(prediction)
+
+        # Check if multiple rows are uploaded
+        if len(prediction) == 1:
+            result = "🟢 **Not Diabetic**" if prediction[0] == 0 else "🔴 **Diabetic**"
+            st.markdown("### Prediction Result:")
+            st.markdown(result)
+        else:
+            # Map results for multiple predictions
+            st.markdown("### Prediction Results:")
+            result_labels = ['Not Diabetic' if p == 0 else 'Diabetic' for p in prediction]
+            result_df = user_input_df.copy()
+            result_df['Prediction'] = result_labels
+            st.dataframe(result_df)
